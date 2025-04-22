@@ -64,7 +64,7 @@ export default function ChatDemo() {
 
   return (
     <Card className="w-full max-w-4xl mx-auto border shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-4">
+      <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4">
         <div className="flex items-center space-x-2">
           <Bot className="h-5 w-5" />
           <h3 className="font-semibold">Waiboom AI Assistant</h3>
@@ -79,16 +79,16 @@ export default function ChatDemo() {
               >
                 <Avatar className="h-8 w-8 mt-0.5">
                   {message.role === "assistant" ? (
-                    <Bot className="h-5 w-5 text-violet-600" />
+                    <Bot className="h-5 w-5 text-blue-600" />
                   ) : (
-                    <div className="bg-gradient-to-r from-violet-600 to-indigo-600 h-full w-full flex items-center justify-center text-white text-xs">
+                    <div className="bg-gradient-to-r from-blue-500 to-blue-700 h-full w-full flex items-center justify-center text-white text-xs">
                       U
                     </div>
                   )}
                 </Avatar>
                 <div
                   className={`rounded-lg px-4 py-2 ${
-                    message.role === "user" ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white" : "bg-muted"
+                    message.role === "user" ? "bg-gradient-to-r from-blue-500 to-blue-700 text-white" : "bg-muted"
                   }`}
                 >
                   {message.content}
@@ -100,20 +100,20 @@ export default function ChatDemo() {
             <div className="flex justify-start">
               <div className="flex items-start gap-2 max-w-[80%]">
                 <Avatar className="h-8 w-8 mt-0.5">
-                  <Bot className="h-5 w-5 text-violet-600" />
+                  <Bot className="h-5 w-5 text-blue-600" />
                 </Avatar>
                 <div className="rounded-lg px-4 py-2 bg-muted">
                   <div className="flex space-x-1">
                     <div
-                      className="h-2 w-2 rounded-full bg-violet-600 animate-bounce"
+                      className="h-2 w-2 rounded-full bg-blue-600 animate-bounce"
                       style={{ animationDelay: "0ms" }}
                     ></div>
                     <div
-                      className="h-2 w-2 rounded-full bg-violet-600 animate-bounce"
+                      className="h-2 w-2 rounded-full bg-blue-600 animate-bounce"
                       style={{ animationDelay: "150ms" }}
                     ></div>
                     <div
-                      className="h-2 w-2 rounded-full bg-violet-600 animate-bounce"
+                      className="h-2 w-2 rounded-full bg-blue-600 animate-bounce"
                       style={{ animationDelay: "300ms" }}
                     ></div>
                   </div>
@@ -136,7 +136,7 @@ export default function ChatDemo() {
             onClick={handleSend}
             size="icon"
             disabled={isLoading || !input.trim()}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white"
+            className="bg-gradient-to-r from-blue-500 to-blue-700 text-white"
           >
             <SendIcon className="h-4 w-4" />
           </Button>

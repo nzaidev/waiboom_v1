@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 
 export default function PricingCta() {
   return (
-    <section id="pricing" className="py-16 bg-gradient-to-b from-violet-50 to-white">
+    <section id="pricing" className="py-16 bg-gradient-to-b from-blue-50 to-white">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">
@@ -15,7 +15,7 @@ export default function PricingCta() {
             </p>
           </div>
           <div className="flex flex-col gap-2 min-[400px]:flex-row pt-4">
-            <Button size="lg" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+            <Button size="lg" className="bg-gradient-to-r from-blue-500 to-blue-700 text-white">
               Get Started Free
             </Button>
             <Button size="lg" variant="outline">

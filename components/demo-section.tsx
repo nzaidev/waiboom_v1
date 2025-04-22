@@ -2,7 +2,7 @@ import ChatDemo from "@/components/chat-demo"
 
 export default function DemoSection() {
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-violet-50">
+    <section className="py-16 bg-gradient-to-b from-white to-blue-50">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">

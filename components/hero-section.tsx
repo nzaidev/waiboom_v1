@@ -10,7 +10,7 @@ export default function HeroSection() {
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
                 Build AI Agents That{" "}
-                <span className="bg-gradient-to-r from-violet-600 to-indigo-600 text-transparent bg-clip-text">
+                <span className="bg-gradient-to-r from-blue-500 to-blue-700 text-transparent bg-clip-text">
                   Work For You
                 </span>
               </h1>
@@ -20,7 +20,7 @@ export default function HeroSection() {
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Button size="lg" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+              <Button size="lg" className="bg-gradient-to-r from-blue-500 to-blue-700 text-white">
                 Get Started
               </Button>
               <Button size="lg" variant="outline">
@@ -57,7 +57,7 @@ export default function HeroSection() {
             </div>
           </div>
           <div className="flex items-center justify-center">
-            <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square overflow-hidden rounded-lg border bg-gradient-to-br from-violet-50 to-indigo-50 p-2">
+            <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square overflow-hidden rounded-lg border bg-gradient-to-br from-blue-50 to-blue-100 p-2">
               <Image
                 src="/ai-agent-dashboard-chat.png"
                 alt="Waiboom AI Platform"

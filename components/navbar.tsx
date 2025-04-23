@@ -56,12 +56,12 @@ export default function Navbar() {
           </Button>
           </Link>
         </div>
-        /* <div className="hidden md:flex items-center gap-4">
+        {/* <div className="hidden md:flex items-center gap-4">
           <Button variant="ghost" size="sm">
             Log in
           </Button>
           <Button size="sm">Get Started</Button>
-        </div> */
+        </div> */}
         <button className="flex md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>

@@ -31,32 +31,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     let unsubscribe: any
 
     const checkAuth = async () => {
-      // Listen for session changes — reliable after magic link login
-      unsubscribe = supabase.auth.onAuthStateChange(async (event, session) => {
-        const user = session?.user
-        if (!user) {
-          console.error("No user session (auth state)")
-          router.push('/login')
-        } else {
+      try {
+        // First, try to get the current user directly
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (user) {
+          // User exists, ensure they have a workspace
           await ensureWorkspaceExists(user.id)
           setLoading(false)
+        } else {
+          // No user found, redirect to login
+          console.log("No user found, redirecting to login")
+          router.push('/login')
         }
-      })
 
-      // Fallback: try getUser on first load
-      const { data, error } = await supabase.auth.getUser()
-      if (data?.user) {
-        await ensureWorkspaceExists(data.user.id)
-        setLoading(false)
-      } else {
-        console.log("Waiting for auth state to initialize...")
+        // Set up auth state change listener for future changes
+        unsubscribe = supabase.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'SIGNED_OUT' || !session?.user) {
+            console.log("User signed out, redirecting to login")
+            router.push('/login')
+          } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            // User is signed in, ensure they have a workspace
+            await ensureWorkspaceExists(session.user.id)
+            setLoading(false)
+          }
+        })
+      } catch (err) {
+        console.error("Authentication error:", err)
+        router.push('/login')
       }
     }
 
     checkAuth()
 
+    // Clean up the subscription when component unmounts
     return () => {
-      unsubscribe?.data?.subscription?.unsubscribe()
+      if (unsubscribe?.data?.subscription) {
+        unsubscribe.data.subscription.unsubscribe()
+      }
     }
   }, [router])
 

@@ -30,27 +30,45 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     let unsubscribe: any
     let retryCount = 0
-    const maxRetries = 5 // Increased from 3 to 5
-    const retryDelay = 1500 // Increased from 1000ms to 1500ms
+    const maxRetries = 8 // Increased to 8 retries
+    const retryDelay = 2000 // Increased to 2 seconds
 
     // Function to check if we're on a magic link redirect
     const isMagicLinkRedirect = () => {
-      // Check if we have hash parameters in the URL (common for magic links)
       return window.location.hash.includes('access_token') || 
              window.location.hash.includes('type=recovery') ||
              window.location.search.includes('access_token');
+    }
+
+    // Function to refresh the session
+    const refreshSession = async () => {
+      try {
+        // Try to refresh the session
+        const { data, error } = await supabase.auth.refreshSession()
+        if (error) {
+          console.error("Error refreshing session:", error.message)
+          return false
+        }
+        return !!data.session
+      } catch (err) {
+        console.error("Exception refreshing session:", err)
+        return false
+      }
     }
 
     const checkAuth = async () => {
       try {
         console.log(`Auth check attempt ${retryCount + 1}/${maxRetries}`)
         
-        // If this is a magic link redirect, we need to wait for Supabase to process it
-        if (isMagicLinkRedirect() && retryCount < 2) {
-          console.log("Detected potential magic link redirect, waiting for session to establish...")
-          retryCount++
-          setTimeout(checkAuth, retryDelay)
-          return
+        // If this is a magic link redirect, try to refresh the session first
+        if (isMagicLinkRedirect()) {
+          console.log("Detected magic link redirect, attempting to refresh session...")
+          const refreshed = await refreshSession()
+          if (refreshed) {
+            console.log("Session refreshed successfully")
+          } else {
+            console.log("Failed to refresh session, will continue with normal auth check")
+          }
         }
 
         // First, try to get the current session
@@ -61,7 +79,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           // User exists in session, ensure they have a workspace
           await ensureWorkspaceExists(session.user.id)
           setLoading(false)
+          return // Exit early if we found a user
         } else {
+          console.log("No session found, trying getUser...")
           // No session, try getUser as fallback
           const { data: { user }, error } = await supabase.auth.getUser()
           
@@ -70,6 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             // User exists, ensure they have a workspace
             await ensureWorkspaceExists(user.id)
             setLoading(false)
+            return // Exit early if we found a user
           } else if (retryCount < maxRetries) {
             // No user found, but we'll retry a few times (helps with magic link redirects)
             console.log(`No user found, retrying (${retryCount + 1}/${maxRetries})...`)

@@ -29,24 +29,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     let unsubscribe: any
+    let retryCount = 0
+    const maxRetries = 3
 
     const checkAuth = async () => {
       try {
-        // First, try to get the current user directly
-        const { data: { user }, error } = await supabase.auth.getUser()
+        // First, try to get the current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
-        if (user) {
-          // User exists, ensure they have a workspace
-          await ensureWorkspaceExists(user.id)
+        if (session?.user) {
+          // User exists in session, ensure they have a workspace
+          await ensureWorkspaceExists(session.user.id)
           setLoading(false)
         } else {
-          // No user found, redirect to login
-          console.log("No user found, redirecting to login")
-          router.push('/login')
+          // No session, try getUser as fallback
+          const { data: { user }, error } = await supabase.auth.getUser()
+          
+          if (user) {
+            // User exists, ensure they have a workspace
+            await ensureWorkspaceExists(user.id)
+            setLoading(false)
+          } else if (retryCount < maxRetries) {
+            // No user found, but we'll retry a few times (helps with magic link redirects)
+            console.log(`No user found, retrying (${retryCount + 1}/${maxRetries})...`)
+            retryCount++
+            setTimeout(checkAuth, 1000) // Retry after 1 second
+            return
+          } else {
+            // No user found after retries, redirect to login
+            console.log("No user found after retries, redirecting to login")
+            router.push('/login')
+          }
         }
 
         // Set up auth state change listener for future changes
         unsubscribe = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log("Auth state changed:", event)
+          
           if (event === 'SIGNED_OUT' || !session?.user) {
             console.log("User signed out, redirecting to login")
             router.push('/login')
@@ -58,7 +77,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         })
       } catch (err) {
         console.error("Authentication error:", err)
-        router.push('/login')
+        if (retryCount < maxRetries) {
+          // Retry on error
+          console.log(`Authentication error, retrying (${retryCount + 1}/${maxRetries})...`)
+          retryCount++
+          setTimeout(checkAuth, 1000) // Retry after 1 second
+        } else {
+          router.push('/login')
+        }
       }
     }
 

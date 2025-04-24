@@ -33,15 +33,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Run on component mount: check auth + trigger workspace logic
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      try {
+        // Get the current user using getUser() instead of getSession()
+        const { data: { user }, error } = await supabase.auth.getUser()
 
-      // If no session, send to login
-      if (!session?.user) {
-        router.push('/login')
-      } else {
-        // Otherwise, make sure this user has a workspace
-        await ensureWorkspaceExists(session.user.id)
+        // If there's an error or no user, redirect to login
+        if (error || !user) {
+          console.error("Authentication error:", error?.message || "No user found")
+          router.push('/login')
+          return
+        }
+
+        // User exists, ensure they have a workspace
+        await ensureWorkspaceExists(user.id)
         setLoading(false) // Done loading, show dashboard
+      } catch (err) {
+        // Handle any unexpected errors
+        console.error("Unexpected error during authentication:", err)
+        router.push('/login')
       }
     }
 

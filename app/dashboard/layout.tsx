@@ -30,14 +30,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     let unsubscribe: any
     let retryCount = 0
-    const maxRetries = 3
+    const maxRetries = 5 // Increased from 3 to 5
+    const retryDelay = 1500 // Increased from 1000ms to 1500ms
+
+    // Function to check if we're on a magic link redirect
+    const isMagicLinkRedirect = () => {
+      // Check if we have hash parameters in the URL (common for magic links)
+      return window.location.hash.includes('access_token') || 
+             window.location.hash.includes('type=recovery') ||
+             window.location.search.includes('access_token');
+    }
 
     const checkAuth = async () => {
       try {
+        console.log(`Auth check attempt ${retryCount + 1}/${maxRetries}`)
+        
+        // If this is a magic link redirect, we need to wait for Supabase to process it
+        if (isMagicLinkRedirect() && retryCount < 2) {
+          console.log("Detected potential magic link redirect, waiting for session to establish...")
+          retryCount++
+          setTimeout(checkAuth, retryDelay)
+          return
+        }
+
         // First, try to get the current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
         if (session?.user) {
+          console.log("User found in session:", session.user.email)
           // User exists in session, ensure they have a workspace
           await ensureWorkspaceExists(session.user.id)
           setLoading(false)
@@ -46,6 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           const { data: { user }, error } = await supabase.auth.getUser()
           
           if (user) {
+            console.log("User found via getUser:", user.email)
             // User exists, ensure they have a workspace
             await ensureWorkspaceExists(user.id)
             setLoading(false)
@@ -53,7 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             // No user found, but we'll retry a few times (helps with magic link redirects)
             console.log(`No user found, retrying (${retryCount + 1}/${maxRetries})...`)
             retryCount++
-            setTimeout(checkAuth, 1000) // Retry after 1 second
+            setTimeout(checkAuth, retryDelay)
             return
           } else {
             // No user found after retries, redirect to login
@@ -71,6 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             router.push('/login')
           } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
             // User is signed in, ensure they have a workspace
+            console.log("User signed in via auth state change:", session.user.email)
             await ensureWorkspaceExists(session.user.id)
             setLoading(false)
           }
@@ -81,13 +103,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           // Retry on error
           console.log(`Authentication error, retrying (${retryCount + 1}/${maxRetries})...`)
           retryCount++
-          setTimeout(checkAuth, 1000) // Retry after 1 second
+          setTimeout(checkAuth, retryDelay)
         } else {
           router.push('/login')
         }
       }
     }
 
+    // Initial check
     checkAuth()
 
     // Clean up the subscription when component unmounts
